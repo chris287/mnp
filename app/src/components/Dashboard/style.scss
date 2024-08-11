@@ -1,0 +1,18 @@
+.Dashboard {
+    .info-text {
+        font-size: 16px;
+        color: #ffffff;
+        line-height: 22px;
+        letter-spacing: 1px;
+        background: linear-gradient(90deg, #df6469, #c17c05);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0 8px 12px 8px;
+      }
+      &__chart-container {
+        display: grid;
+        grid-template-columns: 50% 50%;
+        gap: 4px;
+        margin: 18px 8px;
+      }
+}

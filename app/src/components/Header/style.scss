@@ -1,0 +1,11 @@
+.Header {
+    &__title {
+        background: linear-gradient(90deg, #DF6469, #c17c05);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: rgb(223, 100, 105);
+        font-weight: 700;
+        margin-inline: 2.5rem;
+        font-size: 24px;
+    }
+}

@@ -1,0 +1,73 @@
+.SearchPortOut {
+    .info-text {
+        font-size: 16px;
+        color: #ffffff;
+        line-height: 22px;
+        letter-spacing: 1px;
+        background: linear-gradient(90deg, #df6469, #c17c05);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0 8px 12px 8px;
+      }
+
+      &__results-details {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 1rem;
+        border: 3px solid #454545;
+        margin: 1rem 1rem 1rem 8px;
+        gap: 32px;
+        justify-content: space-between;
+        border-radius: 8px;
+    
+        &--item {
+          display: flex;
+          flex-direction: column;
+          min-width: 160px;
+          gap: 8px;
+    
+          .label {
+            font-size: 16px;
+            font-style: normal;
+            font-weight: 800;
+            line-height: normal;
+            background: linear-gradient(90deg, #df6469, #c17c05);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+          }
+    
+          .value {
+            color: #ffffff;
+            font-family: Roboto;
+            font-size: 16px;
+            font-style: normal;
+            font-weight: 400;
+            line-height: normal;
+          }
+        }
+      }
+    
+      &__results-step-info {
+        margin: 1rem 1rem 1rem 8px;
+    
+        tbody{
+          border: 3px solid #454545;
+    
+          td {
+            color: #ffffff;
+    
+            .po_stage {
+              background: linear-gradient(90deg, #DF6469, #c17c05);
+              -webkit-background-clip: text;
+              -webkit-text-fill-color: transparent;
+              font-weight: 800;
+    
+              &:hover {
+                text-decoration: underline;
+                cursor: pointer;
+              }
+            }
+          }
+        }
+      }
+}
