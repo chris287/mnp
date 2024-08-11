@@ -11,7 +11,7 @@ const PolarAreaChart = ({ chartOptions, title }) => {
   return (
     <Chart
       options={{...chartOptions, title: {...chartOptions.title, text: `${title} (${getTotalCount()})`}}}
-      type="polarArea"
+      type="pie"
       series={chartOptions.series}
       height={350}
     />

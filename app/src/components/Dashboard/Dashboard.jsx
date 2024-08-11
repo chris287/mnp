@@ -5,26 +5,30 @@ import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
 import axios from "axios";
-import { SERVICE_URL } from "../../utils/constants";
+import {
+  SERVICE_URL,
+  mockDashboardResponse,
+  portInPacColumns,
+  portOutPacColumns,
+  portInStacColumns,
+  portOutStacColumns
+} from "../../utils/constants";
 import dayjs from "dayjs";
+import { Typography } from "@mui/material";
 const Dashboard = () => {
   const [selectedDate, setSelectedDate] = useState(dayjs());
-  const [portInChartData, setPortInChartData] = useState(null);
-  const [portOutChartData, setPortOutChartData] = useState(null);
+  const [dashboardData, setDashboardData] = useState(null);
   const [chartOptions, setChartOptions] = useState({
-    series: [14, 23, 21, 17, 15, 10, 12, 17, 21],
-    labels: [
-      "In progress",
-      "Cancelled",
-      "Open",
-      "Completed",
-      "Pending Approval",
-      "Rejected",
-      "On Hold",
-      "Failed",
-      "Closed",
-    ],
+    series: [],
+    labels: [],
     chart: {
       type: "polarArea",
     },
@@ -59,29 +63,72 @@ const Dashboard = () => {
     },
   });
 
-  const getMockValues = () => {
-    const randomNumbers = []
-    while(randomNumbers.length < 9) {
-        const randomNumber = Math.floor(Math.random() * 100) + 1;
-        randomNumbers.push(randomNumber);
+  const createChartData = (chartData, key) => {
+    const labels = [];
+    const series = [];
+    let statusKey = "status";
+    let countKey = "statuscount";
+    if (key == "portout") {
+      statusKey = "po" + statusKey;
+      countKey = "po" + countKey;
     }
-    return randomNumbers;
-  }
+    chartData.forEach((dataItem) => {
+      labels.push(dataItem[statusKey]);
+      series.push(parseInt(dataItem[countKey]));
+    });
 
-  const getChartDataByDate = async() => {
+    return { labels, series };
+  };
+
+  const getChartDataByDate = async () => {
     try {
-      const response = await axios.post(`${SERVICE_URL}/get-dashboard-for-day`, {
-        selectedDate
-      })
-
+      const response = await axios.post(
+        `${SERVICE_URL}/get-dashboard-for-day`,
+        {
+          selectedDate,
+        }
+      );
+      setDashboardData(response.data);
     } catch (error) {
-      console.error(error)
+      console.error(error);
+      setDashboardData(mockDashboardResponse);
     }
-  }
-  useEffect(() => {
-    setChartOptions({...chartOptions, series: getMockValues()})
+  };
 
-    getChartDataByDate()
+  const portInChartData = useMemo(() => {
+    if (!dashboardData) return null;
+    const { portInPie } = dashboardData;
+    return createChartData(portInPie, "portin");
+  }, [dashboardData]);
+
+  const portOutChartData = useMemo(() => {
+    if (!dashboardData) return null;
+    const { portOutPie } = dashboardData;
+    return createChartData(portOutPie, "portout");
+  }, [dashboardData]);
+
+  const portOutPACData = useMemo(() => {
+    if (!dashboardData) return null;
+    return dashboardData.portOutPACData;
+  }, [dashboardData]);
+
+  const portInSTACData = useMemo(() => {
+    if (!dashboardData) return null;
+    return dashboardData.portInSTACData;
+  }, [dashboardData]);
+
+  const portOutSTACData = useMemo(() => {
+    if (!dashboardData) return null;
+    return dashboardData.portOutSTACData;
+  }, [dashboardData]);
+
+  const portInPACData = useMemo(() => {
+    if (!dashboardData) return null;
+    return dashboardData.portInPACData;
+  }, [dashboardData]);
+
+  useEffect(() => {
+    getChartDataByDate();
   }, [selectedDate]);
   return (
     <div className="Dashboard">
@@ -92,12 +139,240 @@ const Dashboard = () => {
       </p>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <DemoContainer components={["DatePicker"]}>
-          <DatePicker label="Select Date" defaultValue={selectedDate} value={selectedDate} onChange={(newValue) => setSelectedDate(newValue)}/>
+          <DatePicker
+            label="Select Date"
+            defaultValue={selectedDate}
+            value={selectedDate}
+            onChange={(newValue) => setSelectedDate(newValue)}
+          />
         </DemoContainer>
       </LocalizationProvider>
       <div className="Dashboard__chart-container">
-        <PolarAreaChart chartOptions={{...chartOptions, series: getMockValues()}} title="Port In" />
-        <PolarAreaChart chartOptions={{...chartOptions, series: getMockValues()}} title="Port Out" />
+        {portInChartData && (
+          <PolarAreaChart
+            chartOptions={{
+              ...chartOptions,
+              series: portInChartData?.series,
+              labels: portInChartData?.labels,
+            }}
+            title="Port In"
+          />
+        )}
+        {portOutChartData && (
+          <PolarAreaChart
+            chartOptions={{
+              ...chartOptions,
+              series: portOutChartData?.series,
+              labels: portOutChartData?.labels,
+            }}
+            title="Port Out"
+          />
+        )}
+      </div>
+      <div className="Dashboard__pastac-container">
+        {/* PORT IN PAC TABLE */}
+        <div>
+          <Typography
+            variant="h5"
+            gutterBottom
+            sx={{ color: "#ffffff", marginBlock: "12px", marginLeft: "8px" }}
+          >
+            Port In PAC
+          </Typography>
+          <TableContainer
+            component={Paper}
+            sx={{ backgroundColor: "transparent" }}
+          >
+            <Table aria-label="simple table">
+              <TableHead>
+                <TableRow>
+                  {portInPacColumns?.map((column) => {
+                    return <TableCell>{column.label}</TableCell>;
+                  })}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {portInPACData?.map((step, stepMapIndex) => {
+                  return (
+                    <TableRow
+                      key={stepMapIndex}
+                      sx={{
+                        "&:last-child td, &:last-child th": { border: 0 },
+                      }}
+                    >
+                      {portInPacColumns?.map((column) => {
+                        return (
+                          <TableCell>
+                            {column.key == "pi_stage" ? (
+                              <span className={column.key}>
+                                {step[column.key] || "NA"}
+                              </span>
+                            ) : (
+                              <span>{step[column.key] || "NA"}</span>
+                            )}
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </div>
+
+        {/* PORT OUT PAC TABLE */}
+        <div>
+          <Typography
+            variant="h5"
+            gutterBottom
+            sx={{ color: "#ffffff", marginBlock: "12px", marginLeft: "8px" }}
+          >
+            Port Out PAC
+          </Typography>
+          <TableContainer
+            component={Paper}
+            sx={{ backgroundColor: "transparent" }}
+          >
+            <Table aria-label="simple table">
+              <TableHead>
+                <TableRow>
+                  {portOutPacColumns?.map((column) => {
+                    return <TableCell>{column.label}</TableCell>;
+                  })}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {portOutPACData?.map((step, stepMapIndex) => {
+                  return (
+                    <TableRow
+                      key={stepMapIndex}
+                      sx={{
+                        "&:last-child td, &:last-child th": { border: 0 },
+                      }}
+                    >
+                      {portOutPacColumns?.map((column) => {
+                        return (
+                          <TableCell>
+                            {column.key == "pi_stage" ? (
+                              <span className={column.key}>
+                                {step[column.key] || "NA"}
+                              </span>
+                            ) : (
+                              <span>{step[column.key] || "NA"}</span>
+                            )}
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </div>
+
+        {/* PORT IN STAC TABLE */}
+        <div>
+          <Typography
+            variant="h5"
+            gutterBottom
+            sx={{ color: "#ffffff", marginBlock: "12px", marginLeft: "8px" }}
+          >
+            Port In STAC
+          </Typography>
+          <TableContainer
+            component={Paper}
+            sx={{ backgroundColor: "transparent" }}
+          >
+            <Table aria-label="simple table">
+              <TableHead>
+                <TableRow>
+                  {portInStacColumns?.map((column) => {
+                    return <TableCell>{column.label}</TableCell>;
+                  })}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {portInSTACData?.map((step, stepMapIndex) => {
+                  return (
+                    <TableRow
+                      key={stepMapIndex}
+                      sx={{
+                        "&:last-child td, &:last-child th": { border: 0 },
+                      }}
+                    >
+                      {portInStacColumns?.map((column) => {
+                        return (
+                          <TableCell>
+                            {column.key == "pi_stage" ? (
+                              <span className={column.key}>
+                                {step[column.key] || "NA"}
+                              </span>
+                            ) : (
+                              <span>{step[column.key] || "NA"}</span>
+                            )}
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </div>
+
+        {/* PORT OUT STAC TABLE */}
+        <div>
+          <Typography
+            variant="h5"
+            gutterBottom
+            sx={{ color: "#ffffff", marginBlock: "12px", marginLeft: "8px" }}
+          >
+            Port Out STAC
+          </Typography>
+          <TableContainer
+            component={Paper}
+            sx={{ backgroundColor: "transparent" }}
+          >
+            <Table aria-label="simple table">
+              <TableHead>
+                <TableRow>
+                  {portOutStacColumns?.map((column) => {
+                    return <TableCell>{column.label}</TableCell>;
+                  })}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {portOutSTACData?.map((step, stepMapIndex) => {
+                  return (
+                    <TableRow
+                      key={stepMapIndex}
+                      sx={{
+                        "&:last-child td, &:last-child th": { border: 0 },
+                      }}
+                    >
+                      {portOutStacColumns?.map((column) => {
+                        return (
+                          <TableCell>
+                            {column.key == "pi_stage" ? (
+                              <span className={column.key}>
+                                {step[column.key] || "NA"}
+                              </span>
+                            ) : (
+                              <span>{step[column.key] || "NA"}</span>
+                            )}
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </div>
       </div>
     </div>
   );

@@ -39,4 +39,12 @@
   .MuiTypography-root-MuiDialogTitle-root {
     min-width: 65vw;
   }
+
+  tbody{
+    border: 3px solid #454545;
+
+    td {
+      color: #ffffff;
+    }
+  }
 }
